@@ -3,7 +3,7 @@ package com.springstudy.bbs.domain;
 import java.sql.Timestamp;
 
 public class Board {
-	// no, title, writer, content, reg_date, read_count, pass, file1
+	
 	private int no;
 	private String title;	
 	private String writer;

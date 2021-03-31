@@ -7,10 +7,7 @@
 	<input type="hidden" name="no" id="no" value="${ board.no }"/>
 	<input type="hidden" name="pass" id="rPass" />
 	<input type="hidden" name="pageNum" value="${ pageNum }" />	
-	<%-- 
-		검색 리스트에서 들어온 요청일 경우 다시 keyword에 해당하는 
-		검색 리스트로 돌려보내기 위해서 아래의 파라미터가 필요하다.
-	 --%>
+	
 	<c:if test="${ searchOption }">
 		<input type="hidden" name="type" value="${ type }" />
 		<input type="hidden" name="keyword" value="${ word }" />
@@ -65,25 +62,18 @@
 		<td colspan="4" class="tdSpan">
 			<input type="button" id="detailUpdate" value="수정하기"/>
 			&nbsp;&nbsp;<input type="button" id="detailDelete" value="삭제하기" />
-			<%-- 
-				일반 게시 글 리스트에서 온 요청이면 일반 게시 글 리스트로 돌려 보낸다. 
-			--%>
+	
 			<c:if test="${ not searchOption }">		
 				&nbsp;&nbsp;<input type="button" value="목록보기" 
 					onclick="javascript:window.location.href=
 						'boardList?pageNum=${ pageNum }'"/>
 			</c:if>
-			<%-- 
-				검색 리스트에서 온 요청이면 검색 리스트의 동일한 페이지로 돌려보낸다. 
-			--%>
+	
 			<c:if test="${ searchOption }">
 				&nbsp;&nbsp;<input type="button" value="목록보기" 
 					onclick="javascript:window.location.href=
 						'boardList?pageNum=${ pageNum }&type=${ type }&keyword=${ keyword }'"/>
-				<%-- 
-					위의 쿼리 스트링을 작성할 때 같은 줄에서 띄어쓰기 하는 것은 문제되지
-					않지만 줄 바꿔서 작성하게 되면 스크립트 에러가 발생한다.
-				--%>		
+	
 			</c:if>				
 		</td>
 	</tr>
