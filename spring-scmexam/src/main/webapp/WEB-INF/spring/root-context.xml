@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p"	
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">		
+	<!-- 
+		SpringWebMVC 설정 외에 추가적으로 필요한 DBCP 설정, MyBatis 설정
+		메시지 자원 설정, 추가적인 스프링 Bean을 등록하는 설정파일				
+
+		DBCP 정보를 properties 파일로부터 읽어서 DataSource를 구하는 설정
+		파일을 import 태그를 사용해 현재 Bean 설정 파일에 포함시킬 수 있다.
+	-->
+	<import resource="classpath:datasource/dbcpdatasource.xml" />
+	
+	<!--
+		JNDI 방식의 DBCP를 참조해 DataSource를 구하는 설정 파일을
+		import 태그를 사용해 현재 Bean 설정 파일에 포함시킬 수 있다.
+		
+		JNDI를 이용한 DBCP DataSource 설정과 관련된 자세한 내용은
+		dacpdatasource_jndi.xml 파일의 주석을 참고하기 바란다.
+	-->
+	<!-- 
+		<import resource="classpath:datasource/dbcpdatasource_jndi.xml" />
+ 	-->
+ 	
+	<!-- 
+		마이바티스와 스프링을 연동하는 방법
+		1. MyBatis3 프레임워크를 사용하기 위한 라이브러리 의존 설정
+			mybatis-3.4.5.jar
+			
+		2. MyBatis3 프레임워크와 스프링프레임워크 연동을 위한 라이브러리 의존 설정
+			mybatis-spring-1.3.1.jar
+			
+		3. MyBatis 설정 파일 작성(생략 가능)
+		  스프링과 MyBatis를 연동하는 애플리케이션을 구현할 때는 MyBatis 설정 파일은
+		  필수사항이 아니며 우리도 별도 설정이 필요하지 않기 때문에 이 설정 파일을 사용하지
+		  않지만 MyBatis 설정 파일 작성에 대한 자세한 사항은 아래 파일을 참고하기 바란다.
+		     
+		   src/main/resources/mybatis-config_참고.xml
+		  
+		4. 스프링 Bean 설정 파일인 root-context.xml 파일에 
+		   SqlSessionFactory 생성을 위한 SqlSessionFactoryBean을 Spring Bean으로 정의
+		
+		5. 스프링 Bean 설정 파일인 root-context.xml 파일에
+		   DAO에서 의존하는 SqlSessionTemplate을 Spring Bean으로 정의 
+		
+		6. 스프링 Bean 설정 파일인 root-context.xml 파일에
+		    스프링이 지원하는 TransactionManager를 Spring Bean으로 정의
+		    트랜잭션을 처리하지 않는 경우에는 TransactionManager는 생략 가능하다.
+		
+		7. 마이바티스를 이용한 DAO 구현
+		  - SqlSession 구현체인 SqlSessionTemplate을 이용한 구현			
+		  - 매퍼(Mapper Interface) 동적생성을 이용한 구현
+		  
+		8. SQL 문장을 분리한 Mapper 작성(Mapper XML 또는 Mapper Interface)	  		    
+	-->
+	
+	<!-- 		
+		1. MyBatis3 프레임워크를 사용하기 위한 라이브러리 의존 설정
+		
+		MyBatis3 프레임워크를 사용하기 위해서는 mybatis 모듈을 아래와 같이 
+		pom.xml에 라이브러리 의존 설정을 해야 한다.		
+		
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.4.5</version>
+		</dependency> 
+	-->
+	
+	<!--	
+		2. MyBatis3 프레임워크와 스프링프레임워크 연동을 위한 라이브러리 의존 설정
+		
+		스프링과 마이바티스를 연동하기 위해서는 마이바티스에서 지원하는 스프링
+		연동 모듈을 아래와 같이 pom.xml에 라이브러리 의존 설정을 해야 한다.
+		
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis-spring</artifactId>
+			<version>1.3.1</version>
+		</dependency>
+		
+		마이바티스와 스프링프레임워크를 연동하기 위해서는 DataSource와
+		스프링이 지원하는 TransactionManager 등이 스프링 빈으로 정의되어
+		있어야 한다. 
+	-->
+	
+	<!--
+		3. MyBatis 설정 파일 작성(mybatis-config.xml, 생략가능)
+		
+		MyBatis는 SQL Mapping 프레임워크로 별도의 설정 파일을 가질 수 있다.
+		스프링프레임워크와 MyBatis를 연동할 경우 MyBatis 설정이 필수적으로 필요한
+		것은 아니지만 MyBatis에서 추가적으로 필요한 부분을 지정할 수 있다.
+		이 MyBatis 설정 파일에는 DB의 접속 주소(별도 설정 가능)나 매핑(Mapper)
+		파일의 경로, 도메인 객체의 별칭, TransactionManager, DBCP 등의 정보를
+		설정할 수 있다. 일반적으로 "src/main/resources" 폴더에 mybatis-config.xml
+		파일로 작성하면 된다.
+		
+		참고로 우리는 mybatis-config.xml 파일은 사용하지 않지만 MyBatis 설정 파일에
+		대한 자세한 사항은 아래 파일의 주석을 참고하기 바란다.
+		
+		src/main/resources/mybatis-config_참고.xml
+	-->
+	
+	<!--  
+		4. 스프링 Bean 설정 파일인 root-context.xml 파일에 
+		   SqlSessionFactory 생성을 위한 SqlSessionFactoryBean을 Spring Bean으로 정의
+		  
+		  SqlSessionFactory 객체는 MyBatis와 스프링프레임워크 연동에서 핵심적인
+		  객체로 MyBatis의 전반적인 정보를 가지고 있는 객체이다. 
+		  이 객체는 DB Connection을 생성하고 관리하며 SQL 실행에 대한 모든 것을
+		  처리하는 객체로 SqlSessionFactoryBean을 통해 SqlSessionFactory
+		  객체를 한 번만 생성해 사용한다.
+	-->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--
+			DBCP를 사용하기 위한 DataSource를 참조 한다.
+		-->
+		<property name="dataSource" ref="dataSource" />
+		
+		<!--  
+			추가로 MyBatis 설정이 필요하다면 설정 파일의 위치를 지정할 수 있다.
+			이번 예제는 스프링에서 제공하는 DataSource와 TransactionManager를
+			사용하기 때문에 MyBatis 설정인 mybatis-config.xml은 사용하지 않는다.
+			
+			스프링과 MyBatis를 연동할 경우 MyBatis 설정 파일인
+			mybatis-config.xml은 필수가 아니기 때문에 생략할 수  있다.
+			우리의 예제도 Mybatis 설정 파일은 사용하지 않는다. 이 설정 파일은
+			스프링을 사용하지 않을 때 필수적으로 사용하는 MyBatis 설정 파일이므로
+			mybatis-config_참고.xml의 주석은 참고삼아 꼭 한 번 읽어보기 바란다.
+		-->
+		 
+		<!--
+			<property name="configLocation" value="classpath:mybatis-config.xml" />
+		-->
+				
+		<!--
+			MyBatis가 동작하면 Mapper를 인식해야 정상적인 DB 작업을 할 수 있다.
+			아래와 같이 SqlSessionFactory의 mapperLocations 프로퍼티로
+			지정할 수 있다. 아래와 같이 지정하면 "repository/mappers/"를 포함한
+			하부 폴더의 "*Mapper.xml"로 끝나는 파일을 Mapper로 인식하게 된다.
+		-->
+		<property name="mapperLocations" 
+			value="classpath:repository/mappers/**/*Mapper.xml" />
+					
+		<!--
+			Mapper 설정이 여러 곳에 나누어져 있을 때 아래와 같이 list로 지정할 수 있다. 
+		-->		
+		<!-- 
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:repository/mappers/BoardMapper.xml</value>
+				<value>classpath:repository/mappers/MemberMapper.xml</value>
+			</list>
+		</property>
+		-->
+		
+		<!-- 
+			typeAliasesPackage 속성은 Mapper 설정에서 타입 별칭을 사용할
+			클래스가 위치한 패키지를 지정하는데 사용한다. 이 속성에 지정한
+			패키지를 자동으로 검색해 클래스 이름으로 타입 별칭을 사용할 수 있도록
+			해 준다. 아래와 같이 typeAliasesPackage를 지정하면 value에 지정한
+			패키지를 포함한 하부 패키지의 모든 클래스를 완전한 클래스 이름이 아닌 
+			클래스 이름만 지정하여 사용할 수 있도록 해 준다. 만약 이를 설정하지 않으면
+			Mapper 설정에서 타입을 지정할 때 패키지를 포함한 완전한 클래스 이름으로
+			지정해야 한다.			
+		-->		
+		<property name="typeAliasesPackage" value="com.springstudy.bbs.domain" />
+		
+		<!--
+		 	typeAliases 속성을 사용해 Mapper 설정에서 완전한 클래스 이름 대신
+		 	별칭을 사용할 클래스 목록을 지정할 수도 있다. 
+		 	typeAliases에 지정한 클래스에 @Alias("Board") 애노테이션을 적용하면
+		 	Mapper 설정에서 Board 라는 별칭으로 타입을 지정할 수 있다.
+		-->	
+		<!-- 	
+		<property name="typeAliases">
+			<list>
+				<value>com.springstudy.bbs.domain.Board</value>
+				<value>com.springstudy.bbs.domain.Member</value>
+			</list>
+		</property>
+		-->			
+	</bean>
+	
+	<!-- 
+		5. 스프링 Bean 설정 파일인 root-context.xml 파일에
+		   DAO에서 의존하는 SqlSessionTemplate을 Spring Bean으로 정의
+				
+		mybatis-spring 모듈은 MyBatis의 SqlSession 기능과 스프링 DB 지원 기능을
+		연동해 주는 SqlSessionTemplate 클래스를 제공한다. SqlSessionTemplate은
+		SqlSession을 구현해 스프링과 연동하는 기능을 구현했기 때문에 우리가 만드는
+		DAO에서 SqlSessionTemplate 객체를 사용해 SqlSession에 정의된 메서드를
+		사용할 수 있다.
+		
+		SqlSession과 SqlSessionTemplate은 같은 역할을 담당하고 있지만 트랜잭션 
+		처리에서 다른 부분이 있다. SqlSession은 commit(), rollback() 메서드를
+		명시적으로 호출해 트랜잭션을 처리 하지만 SqlSessionTemplate은 스프링이 
+		트랜잭션을 처리할 수 있도록 구현되어 있기 때문에 별도로 commit(), rollback()
+		메서드를 호출할 필요가 없다.
+		
+		SqlSessionTemplate은 SqlSessionFactoryBean을 사용해
+		DB 접속해 작업하기 때문에 아래와 같이 생성자로 주입 받도록 설정하면 된다.
+	-->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate"
+		c:sqlSessionFactory-ref="sqlSessionFactory" />
+
+	<!--  
+		6. 스프링 Bean 설정 파일인 root-context.xml 파일에
+		    스프링이 지원하는 TransactionManager를 Spring Bean으로 정의(생략 가능)
+		
+		마이바티스는 JDBC 기반이기 때문에 DataSourceTransactionManager를
+		이용해 다음과 같은 방식의 트랜잭션을 처리할 수 있다.
+		
+		tx 네임스페이스를 이용한 트랜잭션 처리
+		@Transactional 애노테이션을 이용한 트랜잭션 처리
+	
+		## 트랜잭션 매니저 정의하기 ##
+		스프링은 트랜잭션 처리를 위해 PlatformTransactionManager 인터페이스를
+		통해 추상화 하고 각각의 DB 연동 기술에 따라서 PlatformTransactionManager
+		구현 클래스를 아래와 같이 제공하고 있다.
+		
+		JDBC 기반 : DataSourceTransactionManager
+		하이버네이트 : HibernateTransactionManager
+		JPA : JpaTransactionManager
+		JTA : JtaTransactionManager
+		
+		아래는 JDBC 기반 DB 연동기술을 사용하는 스프링 DB 지원 템플릿 클래스
+		(JdbcTemplate 등)를 사용하거나 MyBatis를 사용할 경우 트랜잭션 매니저 설정이다. 
+		
+		DBCP를 사용하기 위한 DataSource를 setter 주입 받도록 설정하면 된다.
+	-->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager" 
+		p:dataSource-ref="dataSource" />
+    
+	<!--			
+		7. 마이바티스를 이용한 DAO 구현
+		  - SqlSession 구현체 SqlSessionTemplate을 이용한 구현			
+		  - 매퍼(Mapper Interface를) 동적생성을 이용한 구현
+		
+		우리는 SqlSessionTemplate을 이용해 DAO를 구현할 것이다. 그러므로 이 설정
+		파일에 SqlSessionTemplate을 Spring Bean으로 정의하고 스프링으로 부터 
+		주입 받아 사용할 수 있도록 DAO에서 생성자 또는 세터를 추가하면 된다.
+		
+		스프링과 MyBatis를 연동해 DAO를 구현할 경우 DAO에서 SqlSessionTemplate을
+		사용해 DB 작업을 하게 된다. 이 SqlSessionTemplate은 DAO에서 SQL 쿼리를
+		분리한 MyBatisMapper에서 매핑 구문을 호출해 SQL을 실행하는 역할을 담담하는 
+		객체이며 스프링과 MyBatis를 연동할 때 SqlSessionTemplate은 DB에 실제 
+		SQL 쿼리를 발행하거나 트랜잭션을 관리하는 핵심 객체 이다.
+	-->	
+			
+	<!--
+		8. SQL을 분리한 Mapper 작성(Mapper XML 또는 Mapper Interface)		
+		   	
+		  일반적으로 Mapper 설정 파일은 "src/main/resources" 폴더에 작성하거나
+		  이 폴더에 새로운 폴더를 추가해 작성하면 되며 Mapper Interface는 
+		  "src/main/java"에 패키지를 추가해 작성하면 된다.
+		  
+		  우리는 src/main/resources 폴더에 Mapper XML을 작성해 사용할 것이다.
+	-->
+			
+	<!-- 
+		## Service 정의하기 ##
+		## Dao 정의하기 ##
+		servlet-context.xml 파일에 <context:component-scan />을 적용했기
+		때문에 Spring MVC Annotation 기반의 Bean을 선언하고 검색하게 되므로
+		별도로 Service 클래스와 Dao 클래스를 이 Bean 설정 파일에 정의하지 않고
+		서비스 클래스에는 @Service 애노테이션과 Dao 클래스에는 @Repository
+		애노테이션을 적용시키면 Spring DI 컨테이터가 Bean을 스캔해 등록한다. 		
+	-->			
+</beans>
