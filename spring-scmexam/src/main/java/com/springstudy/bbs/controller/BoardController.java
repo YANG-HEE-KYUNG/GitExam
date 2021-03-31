@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.springstudy.bbs.domain.Board;
 import com.springstudy.bbs.service.BoardService;
 
-// commit 수정사항 확인하기
+// commit 수정사항 확인하기 01
 @Controller
 public class BoardController {	
 
